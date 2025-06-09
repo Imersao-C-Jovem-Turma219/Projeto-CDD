@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Dashboard de testes</title>
+  <link rel="stylesheet" href="../static/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <h1>Dashboard de teste</h1>
+
+  <div class="chart-container">
+    <h2>Avaliação Geral</h2>
+    <canvas id="chartAvaliacao"></canvas>
+  </div>
+
+  <div class="chart-container">
+    <h2>Habilidades</h2>
+    <canvas id="chartHabilidades"></canvas>
+  </div>
+
+  <script>
+    async function carregarAvaliacao() {
+      const res = await fetch('/api/avaliacao_geral');
+      const data = await res.json();
+
+      new Chart(document.getElementById('chartAvaliacao'), {
+        type: 'bar',
+        data: {
+          labels: Object.keys(data),
+          datasets: [{
+            label: 'Quantidade',
+            data: Object.values(data),
+            backgroundColor: '#4e73df'
+          }]
+        }
+      });
+    }
+
+    async function carregarHabilidades() {
+      const res = await fetch('/api/habilidades');
+      const data = await res.json();
+
+      const habilidades = Object.keys(data);
+      const categorias = new Set();
+
+      habilidades.forEach(hab => {
+        Object.keys(data[hab]).forEach(cat => categorias.add(cat));
+      });
+
+      const datasets = Array.from(categorias).map((categoria, idx) => {
+        return {
+          label: categoria,
+          data: habilidades.map(hab => data[hab][categoria] || 0),
+          backgroundColor: `hsl(${idx * 50}, 70%, 60%)`
+        };
+      });
+
+      new Chart(document.getElementById('chartHabilidades'), {
+        type: 'bar',
+        data: {
+          labels: habilidades.map(h => h.replace('habilidade_', '').replace(/_/g, ' ')),
+          datasets: datasets
+        },
+        options: {
+          responsive: true,
+          scales: { x: { stacked: true }, y: { stacked: true } }
+        }
+      });
+    }
+
+    carregarAvaliacao();
+    carregarHabilidades();
+  </script>
+</body>
+</html>

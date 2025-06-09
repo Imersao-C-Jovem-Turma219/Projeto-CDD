@@ -1,0 +1,7 @@
+pandas
+psycopg2-binary
+peewee
+Flask
+python-dotenv
+plotly
+dash
